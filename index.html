@@ -105,6 +105,19 @@
 
 <section id="cases" class="page">
   <div class="page-head"><div><div class="eyebrow">CASE-BASED REASONING</div><h1>Clinical Case Arcade</h1><p>Information unfolds. Your answer should change only when the evidence changes.</p></div><button class="ghost" data-route="home">← Home</button></div>
+  <div class="case-tools">
+    <div class="case-filter-row">
+      <button class="chip selected" data-case-filter="all">All cases</button>
+      <button class="chip" data-case-filter="anxiety">Anxiety / Trauma</button>
+      <button class="chip" data-case-filter="mood">Mood / Safety</button>
+      <button class="chip" data-case-filter="diagnosis">Diagnosis</button>
+      <button class="chip" data-case-filter="ethics">Ethics</button>
+      <button class="chip" data-case-filter="child">Child / Family</button>
+      <button class="chip" data-case-filter="substance">Substance</button>
+      <button class="chip" data-case-filter="group">Group</button>
+    </div>
+    <button class="cta blue-bg" id="randomCase">🎲 Surprise me</button>
+  </div>
   <div id="casePicker" class="case-picker"></div>
   <div id="caseStage" class="case-stage hidden"></div>
 </section>
