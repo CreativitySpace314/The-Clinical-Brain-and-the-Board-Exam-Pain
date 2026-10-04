@@ -203,6 +203,19 @@ function caseMatches(c,filter){
   };
   return (maps[filter]||[]).some(k=>s.includes(k));
 }
+function caseDomainEmoji(domain){
+  const d=(domain||"").toLowerCase();
+  if(d.includes("ethic")) return "⚖️";
+  if(d.includes("diagnos")||d.includes("assessment")) return "🔎";
+  if(d.includes("treatment")) return "🎯";
+  if(d.includes("skill")||d.includes("intervention")) return "🧰";
+  if(d.includes("attribute")) return "💗";
+  if(d.includes("focus")) return "🧠";
+  return "📌";
+}
+function caseMemoryCue(q){
+  return '<div class="case-memory-cue"><span>'+caseDomainEmoji(q.domain)+'</span><div><b>MEMORY HOOK</b><p>'+q.rule+'</p></div></div>';
+}
 function renderCases(){
   const list=FULL_CASES.filter(c=>caseMatches(c,caseFilter));
   $("#casePicker").innerHTML=list.map(c=>{
@@ -216,10 +229,12 @@ function renderCases(){
 let caseMode="study";
 function startCase(id){
   const cc=FULL_CASES.find(x=>x.id===id);
+  if(!cc){toast("That case could not load. Refresh and try again.");return;}
   caseRun={case:cc,part:0,q:0,score:0,answers:{},revealed:{},referenceOpen:true};
   $("#casePicker").style.display="none";
   $("#caseStage").classList.remove("hidden");
   renderCaseQuestion();
+  $("#caseStage").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 function clientSnapshotCompact(cc){
@@ -291,7 +306,7 @@ function renderCaseQuestion(){
       '</section>'+
     '</div>';
 
-  $("#leaveCase").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden");};
+  $("#leaveCase").onclick=()=>{$("#caseStage").classList.add("hidden");renderCases();};
   $("#referenceToggle").onclick=()=>{caseRun.referenceOpen=!caseRun.referenceOpen;renderCaseQuestion();};
   if($("#hintToggle")) $("#hintToggle").onclick=()=>$("#caseHint").classList.toggle("show");
   $$(".case-radio").forEach(b=>b.onclick=()=>selectSingleCaseAnswer(+b.dataset.choice));
@@ -321,7 +336,7 @@ function showStudyFeedback(){
     else if(i===chosen)b.classList.add("wrong");
     else b.classList.add("dim");
   });
-  $("#singleFeedback").innerHTML='<div class="case-feedback '+(ok?'good':'bad')+'"><b>'+(ok?'✓ Correct':'✗ Review this')+'</b><div>'+q.why+'</div><div class="mini-rule">🧠 '+q.rule+'</div></div>';
+  $("#singleFeedback").innerHTML='<div class="case-feedback '+(ok?'good':'bad')+'"><b>'+(ok?'✓ Correct':'✗ Review this')+'</b><div>'+q.why+'</div>'+caseMemoryCue(q)+'</div>';
 }
 function moveCase(dir){
   const total=totalCaseQuestions(),global=currentGlobalNumber();
