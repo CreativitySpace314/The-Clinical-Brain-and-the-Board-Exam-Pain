@@ -4,6 +4,7 @@ let state=JSON.parse(localStorage.getItem(KEY)||"{}");
 state.answers=state.answers||{};
 state.activity=state.activity||[];
 state.profile=state.profile||"current";
+state.errorReasons=state.errorReasons||{};
 let session={items:[],i:0,score:0,streak:0,answered:false,mode:"smart"};
 let caseRun=null;
 
@@ -15,6 +16,7 @@ function route(id){
   $$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.route===id));
   if(id==="review")renderReview();
   if(id==="dashboard")renderDashboard();
+  if(id==="learn")renderLearn();
   if(id==="home")renderHomeStats();
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -121,11 +123,12 @@ function answerQuestion(choice,btn){
     else b.classList.add("dim");
   });
   const f=$("#feedback");f.className="feedback show "+(ok?"good":"bad");
-  f.innerHTML='<div class="big">'+(ok?"✓ YES. Clinical brain online.":"✗ Not this time — this is useful data.")+'</div><div>'+q.why+'</div><div class="rule">🧠 '+q.rule+'</div>';
+  f.innerHTML='<div class="big">'+(ok?"✓ YES. Clinical brain online.":"✗ Not this time — this is useful data.")+'</div><div>'+q.why+'</div><div class="rule">🧠 '+q.rule+'</div>'+(ok?'':errorReasonHTML(q.id));
   $("#confidenceBox").classList.add("show");$("#nextQuestion").classList.add("show");
   const r=state.answers[q.id]||{attempts:0,correct:0,misses:0};
   r.attempts++;if(ok)r.correct++;else r.misses++;r.lastCorrect=ok;r.lastSeen=Date.now();state.answers[q.id]=r;
   state.activity.unshift({t:Date.now(),id:q.id,topic:q.topic,ok,mode:session.mode});state.activity=state.activity.slice(0,40);save();
+  if(!ok) bindErrorReasonButtons(q.id);
 }
 $$("#confidenceBox button").forEach(b=>b.onclick=()=>{
   const q=session.items[session.i]; const r=state.answers[q.id]||{};r.confidence=b.dataset.confidence;state.answers[q.id]=r;save();
@@ -351,6 +354,71 @@ $("[data-case-filter]").forEach(b=>b.onclick=()=>{
   $("[data-case-filter]").forEach(x=>x.classList.toggle("selected",x===b));
   renderCases();
 });
+
+const ERROR_REASON_LABELS={
+  wording:"Missed FIRST / BEST / EXCEPT",
+  sequence:"Jumped ahead",
+  theory:"Mixed up theories/techniques",
+  differential:"Differential/criteria miss",
+  assessment:"Wrong tool/population",
+  ethics:"Ethics nuance",
+  scope:"Goal/scope mismatch",
+  emotion:"Emotion vs belief",
+  other:"Other"
+};
+function errorReasonHTML(id){
+  const selected=state.errorReasons[id]||"";
+  return '<div class="reason-picker"><b>What fooled me?</b><div class="reason-buttons">'+Object.entries(ERROR_REASON_LABELS).map(([k,v])=>'<button class="reason-btn '+(selected===k?'selected':'')+'" data-error-reason="'+k+'">'+v+'</button>').join("")+'</div></div>';
+}
+function bindErrorReasonButtons(id){
+  $$(".reason-btn").forEach(b=>b.onclick=()=>{
+    state.errorReasons[id]=b.dataset.errorReason;
+    save();
+    $$(".reason-btn").forEach(x=>x.classList.toggle("selected",x===b));
+    toast("Saved the miss pattern.");
+  });
+}
+
+function renderLearn(){
+  if(!$("#lessonGrid")) return;
+  $("#lessonGrid").innerHTML=FEEDBACK_LESSONS.map(l=>
+    '<button class="lesson-card '+l.color+'" data-lesson="'+l.id+'"><span class="lesson-icon">'+l.icon+'</span><h3>'+l.title+'</h3><p>'+l.rule+'</p><b>LEARN THE RULE →</b></button>'
+  ).join("");
+  $$(".lesson-card").forEach(b=>b.onclick=()=>openLesson(b.dataset.lesson));
+}
+function openLesson(id){
+  const l=FEEDBACK_LESSONS.find(x=>x.id===id);
+  if(!l)return;
+  const stage=$("#lessonStage");
+  stage.classList.remove("hidden");
+  stage.innerHTML='<div class="lesson-detail">'+
+    '<div class="lesson-detail-top"><div><span class="lesson-big-icon">'+l.icon+'</span><span class="eyebrow">ERROR PATTERN</span><h2>'+l.title+'</h2></div><button class="ghost" id="closeLesson">✕ Close</button></div>'+
+    '<div class="lesson-rule-banner">'+l.rule+'</div>'+
+    '<p class="lesson-explain">'+l.learn+'</p>'+
+    '<div class="lesson-columns"><div><h4>🚩 Common traps</h4><ul>'+l.traps.map(x=>'<li>'+x+'</li>').join("")+'</ul></div><div class="checkpoint"><h4>🧠 Before I click</h4><p>'+l.checkpoint+'</p></div></div>'+
+    '</div>';
+  $("#closeLesson").onclick=()=>stage.classList.add("hidden");
+  stage.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function startFeedbackDrill(){
+  const items=shuffle(FEEDBACK_MICRODRILLS).map((q,i)=>({
+    id:"fb-"+q.lesson+"-"+i,
+    domain:"Feedback Learning Lab",
+    topic:FEEDBACK_LESSONS.find(l=>l.id===q.lesson)?.title||q.lesson,
+    difficulty:2,
+    profiles:["current"],
+    q:q.q,
+    stem:"",
+    choices:q.choices,
+    answer:q.answer,
+    why:q.why,
+    rule:FEEDBACK_LESSONS.find(l=>l.id===q.lesson)?.rule||"Use the case evidence."
+  }));
+  session={items,i:0,score:0,streak:0,answered:false,mode:"feedback"};
+  route("quiz");showQuestion();
+}
+if($("#startFeedbackDrill")) $("#startFeedbackDrill").onclick=startFeedbackDrill;
+
 $("#caseStudyMode").onclick=()=>{caseMode="study";$("#caseStudyMode").classList.add("selected");$("#caseExamMode").classList.remove("selected");toast("Study mode: hints + instant feedback");};
 $("#caseExamMode").onclick=()=>{caseMode="exam";$("#caseExamMode").classList.add("selected");$("#caseStudyMode").classList.remove("selected");toast("Exam-like mode: feedback waits until the end");};
 $("#randomCase").onclick=()=>startCase(FULL_CASES[Math.floor(Math.random()*FULL_CASES.length)].id);
