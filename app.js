@@ -182,27 +182,128 @@ function renderDashboard(){
 $("#resetProgress").onclick=()=>{if(confirm("Reset all locally saved NCMHCE progress on this device?")){state={answers:{},activity:[],profile:state.profile};save();renderDashboard();toast("Progress reset.");}};
 
 function renderCases(){
-  $("#casePicker").innerHTML=CASES.map(c=>'<button class="case-card" data-case="'+c.id+'"><div class="icon">'+c.icon+'</div><h3>'+c.title+'</h3><p>'+c.focus+'</p></button>').join("");
+  $("#casePicker").innerHTML=FULL_CASES.map(c=>{
+    const total=c.parts.reduce((n,p)=>n+p.questions.length,0);
+    return '<button class="case-card" data-case="'+c.id+'"><div class="icon">'+c.icon+'</div><h3>'+c.title+'</h3><p>'+c.focus+'</p><div class="case-count">'+total+' questions · 3 sections</div></button>';
+  }).join("");
   $$("[data-case]").forEach(b=>b.onclick=()=>startCase(b.dataset.case));
 }
+
 function startCase(id){
-  const c=CASES.find(x=>x.id===id);caseRun={case:c,step:0,score:0,answered:false};
-  $("#casePicker").style.display="none";$("#caseStage").classList.remove("hidden");renderCaseStep();
+  const c=FULL_CASES.find(x=>x.id===id);
+  caseRun={case:c,part:0,score:0,answers:{},submitted:false};
+  $("#casePicker").style.display="none";
+  $("#caseStage").classList.remove("hidden");
+  renderCasePart();
 }
-function renderCaseStep(){
-  const c=caseRun.case,s=c.steps[caseRun.step];
-  $("#caseStage").innerHTML='<div class="case-head"><div><span class="tag">'+s.section+'</span><h2>'+c.icon+' '+c.title+'</h2></div><button class="ghost" id="leaveCase">← Cases</button></div><div class="case-section"><b>CASE INFO</b><br>'+c.intake+(s.add?'<br><br><b>NEW INFORMATION</b><br>'+s.add:'')+'</div><div class="case-question"><h3>'+s.q+'</h3><div class="answers" id="caseAnswers"></div><div class="feedback" id="caseFeedback"></div><div class="question-actions"><button class="cta green-bg" id="caseNext">Next scene →</button></div></div>';
+
+function clientSnapshot(c){
+  const m=c.client;
+  return '<div class="client-snapshot">'+
+    '<div class="snapshot-title">CLIENT SNAPSHOT</div>'+
+    '<div class="snapshot-grid">'+
+      '<div><span>Age</span><b>'+m.age+'</b></div>'+
+      '<div><span>Sex</span><b>'+m.sex+'</b></div>'+
+      '<div><span>Gender</span><b>'+m.gender+'</b></div>'+
+      '<div><span>Pronouns</span><b>'+m.pronouns+'</b></div>'+
+      '<div><span>Orientation</span><b>'+m.orientation+'</b></div>'+
+      '<div><span>Race/Ethnicity</span><b>'+m.race+'</b></div>'+
+      '<div><span>Relationship</span><b>'+m.relationship+'</b></div>'+
+      '<div><span>Setting</span><b>'+m.setting+'</b></div>'+
+      '<div><span>Payment</span><b>'+m.payment+'</b></div>'+
+      '<div><span>Counseling</span><b>'+m.type+'</b></div>'+
+      '<div class="wide"><span>Provisional diagnosis</span><b>'+m.provisional+'</b></div>'+
+    '</div></div>';
+}
+
+function partTabs(c){
+  return '<div class="case-part-tabs">'+c.parts.map((p,i)=>
+    '<div class="case-part-tab '+(i===caseRun.part?'active':i<caseRun.part?'done':'')+'">'+
+      '<span>'+(i+1)+'</span><div><b>'+p.label+'</b><small>'+p.section+'</small></div>'+
+    '</div>').join("")+'</div>';
+}
+
+function renderCasePart(){
+  const c=caseRun.case,p=c.parts[caseRun.part];
+  caseRun.answers={};caseRun.submitted=false;
+  $("#caseStage").innerHTML=
+    '<div class="case-head"><div><span class="tag priority">FULL CASE SIMULATION</span><h2>'+c.icon+' '+c.title+'</h2><p class="muted">'+c.focus+'</p></div><button class="ghost" id="leaveCase">← Cases</button></div>'+
+    partTabs(c)+clientSnapshot(c)+
+    '<div class="case-narrative"><div class="narrative-label">'+p.label+' · '+p.section+'</div><p>'+p.narrative+'</p></div>'+
+    '<div class="case-questions-head"><div><span class="eyebrow">QUESTIONS FOR THIS SECTION</span><h3>Answer all '+p.questions.length+' before submitting.</h3></div><div class="case-running-score">Case score: '+caseRun.score+'</div></div>'+
+    '<div id="partQuestions" class="part-questions">'+
+      p.questions.map((q,qi)=>renderPartQuestion(q,qi)).join("")+
+    '</div>'+
+    '<div class="case-submit-row"><button class="cta pink-bg" id="submitPart">Submit '+p.label+'</button></div>'+
+    '<div id="partSummary"></div>';
+
   $("#leaveCase").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden");};
-  s.choices.forEach((x,i)=>{const b=document.createElement("button");b.className="answer-btn";b.textContent=String.fromCharCode(65+i)+". "+x;b.onclick=()=>answerCase(i,b);$("#caseAnswers").appendChild(b)});
+  $$(".case-option").forEach(b=>b.onclick=()=>selectCaseAnswer(+b.dataset.q,+b.dataset.a,b));
+  $("#submitPart").onclick=submitCasePart;
 }
-function answerCase(i,btn){
-  if(caseRun.answered)return;caseRun.answered=true;const s=caseRun.case.steps[caseRun.step],ok=i===s.answer;if(ok)caseRun.score++;
-  $$("#caseAnswers .answer-btn").forEach((b,j)=>{b.disabled=true;if(j===s.answer)b.classList.add("correct");else if(j===i)b.classList.add("wrong");else b.classList.add("dim")});
-  const f=$("#caseFeedback");f.className="feedback show "+(ok?"good":"bad");f.innerHTML='<div class="big">'+(ok?"✓ Correct":"✗ Rework the clinical sequence")+'</div><div>'+s.why+'</div><div class="rule">🧠 '+s.rule+'</div>';
-  $("#caseNext").classList.add("show");$("#caseNext").onclick=()=>{caseRun.step++;caseRun.answered=false;if(caseRun.step<caseRun.case.steps.length)renderCaseStep();else finishCase()};
+
+function renderPartQuestion(q,qi){
+  return '<article class="lined-question" id="cq'+qi+'">'+
+    '<div class="lined-q-top"><span class="q-number">'+(qi+1)+'</span><div><span class="tag">'+q.domain+'</span><div class="subdomain">'+q.sub+'</div></div></div>'+
+    '<h4>'+q.q+'</h4>'+
+    '<div class="lined-options">'+q.choices.map((x,i)=>
+      '<button class="case-option" data-q="'+qi+'" data-a="'+i+'"><span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+x+'</span></button>'
+    ).join("")+'</div>'+
+    '<div class="case-q-feedback" id="cf'+qi+'"></div>'+
+  '</article>';
 }
+
+function selectCaseAnswer(qi,ai,btn){
+  if(caseRun.submitted)return;
+  caseRun.answers[qi]=ai;
+  $$('#cq'+qi+' .case-option').forEach(x=>x.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+
+function submitCasePart(){
+  if(caseRun.submitted)return;
+  const p=caseRun.case.parts[caseRun.part];
+  if(Object.keys(caseRun.answers).length<p.questions.length){
+    toast("Answer every question in this section first.");
+    return;
+  }
+  caseRun.submitted=true;
+  let partScore=0;
+  p.questions.forEach((q,qi)=>{
+    const chosen=caseRun.answers[qi],ok=chosen===q.answer;
+    if(ok){partScore++;caseRun.score++;}
+    $$('#cq'+qi+' .case-option').forEach((b,i)=>{
+      b.disabled=true;
+      b.classList.remove("selected");
+      if(i===q.answer)b.classList.add("correct");
+      else if(i===chosen)b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    $("#cf"+qi).innerHTML='<div class="case-feedback '+(ok?'good':'bad')+'"><b>'+(ok?'✓ Correct':'✗ Review')+'</b><div>'+q.why+'</div><div class="mini-rule">🧠 '+q.rule+'</div></div>';
+  });
+  $("#submitPart").style.display="none";
+  const isLast=caseRun.part===caseRun.case.parts.length-1;
+  $("#partSummary").innerHTML='<div class="part-summary"><div><span class="eyebrow">SECTION RESULT</span><h3>'+partScore+'/'+p.questions.length+' correct</h3><p>'+(isLast?'You finished the full case.':'New information comes next. Do not carry assumptions forward unless the new narrative supports them.')+'</p></div><button class="cta green-bg" id="advancePart">'+(isLast?'Finish case →':'Unlock next section →')+'</button></div>';
+  $("#advancePart").onclick=()=>{
+    if(isLast) finishCase();
+    else {caseRun.part++;renderCasePart();window.scrollTo({top:0,behavior:"smooth"});}
+  };
+}
+
 function finishCase(){
-  const c=caseRun.case;$("#caseStage").innerHTML='<div class="case-head"><div><span class="tag">CASE COMPLETE</span><h2>'+c.icon+' '+c.title+'</h2></div></div><div class="memory-strip"><div class="memory-title">CASE SCORE</div><div class="memory-rule">'+caseRun.score+'/'+c.steps.length+'</div></div><p class="muted">Try it again later. Case-based repetition is about sequencing—not memorizing a letter choice.</p><div class="hero-actions"><button class="cta pink-bg" id="caseAgain">↻ Replay</button><button class="cta green-bg" id="allCases">All cases</button></div>';
-  $("#caseAgain").onclick=()=>startCase(c.id);$("#allCases").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden")};
+  const c=caseRun.case,total=c.parts.reduce((n,p)=>n+p.questions.length,0);
+  const pct=Math.round(caseRun.score/total*100);
+  $("#caseStage").innerHTML=
+    '<div class="case-complete">'+
+      '<div class="case-complete-brain">🧠⚡</div>'+
+      '<span class="tag priority">CASE COMPLETE</span>'+
+      '<h2>'+c.title+'</h2>'+
+      '<div class="case-score-big">'+caseRun.score+' / '+total+'</div>'+
+      '<p>'+pct+'% on this original case simulation. More important: did your reasoning change when the narrative changed?</p>'+
+      '<div class="memory-strip"><div class="memory-title">NCMHCE CASE RULE</div><div class="memory-rule">Read only what you know NOW. Intake → questions → new session data → new questions.</div></div>'+
+      '<div class="hero-actions"><button class="cta pink-bg" id="caseAgain">↻ Replay case</button><button class="cta green-bg" id="allCases">Choose another</button></div>'+
+    '</div>';
+  $("#caseAgain").onclick=()=>startCase(c.id);
+  $("#allCases").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden")};
 }
 renderCases();renderHomeStats();setRule();
