@@ -16,6 +16,7 @@
     <button data-route="home" class="active">Home</button>
     <button data-route="practice">Practice</button>
     <button data-route="cases">Cases</button>
+    <button data-route="learn">Learn</button>
     <button data-route="review">Missed</button>
     <button data-route="dashboard">Progress</button>
   </nav>
@@ -128,6 +129,17 @@
   <div id="caseStage" class="case-stage hidden"></div>
 </section>
 
+<section id="learn" class="page">
+  <div class="page-head"><div><div class="eyebrow">FEEDBACK → SKILL</div><h1>Why You Missed It Lab</h1><p>This is built from the patterns in your practice-test feedback. Not just what the correct answer was — what decision rule would have gotten you there.</p></div><button class="ghost" data-route="home">← Home</button></div>
+  <div class="feedback-score-card">
+    <div><span class="eyebrow">PRACTICE TEST SNAPSHOT</span><strong>76 / 143</strong><small>53.15% • 67 misses to turn into rules</small></div>
+    <div class="feedback-score-copy">The goal here is not to memorize those exact questions. It is to learn the recurring exam moves behind them.</div>
+  </div>
+  <div id="lessonGrid" class="lesson-grid"></div>
+  <div id="lessonStage" class="lesson-stage hidden"></div>
+  <div class="microdrill-head"><div><span class="eyebrow">10-QUESTION ERROR-PATTERN DRILL</span><h2>Can you spot the trap now?</h2></div><button class="cta green-bg" id="startFeedbackDrill">Start feedback drill →</button></div>
+</section>
+
 <section id="review" class="page">
   <div class="page-head"><div><div class="eyebrow">YOUR ERROR BANK</div><h1>Missed ≠ failed. Missed = data.</h1></div><button class="cta pink-bg" id="reviewDrill">Drill missed</button></div>
   <div class="review-toolbar">
@@ -151,6 +163,7 @@
 <div id="toast" class="toast"></div>
 <script src="data.js"></script>
 <script src="cases-extra.js"></script>
+<script src="learning-data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
