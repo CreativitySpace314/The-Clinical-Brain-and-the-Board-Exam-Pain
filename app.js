@@ -173,13 +173,17 @@ function renderDashboard(){
   const s=stats();
   $("#dashStats").innerHTML=[["Attempts",s.total,"hot"],["Accuracy",s.pct+"%","lime"],["Missed concepts",s.missed,"cyan"],["Mastered",s.mastered,"violet"]].map(([l,v,c])=>'<div class="stat '+c+'"><b>'+v+'</b><small>'+l+'</small></div>').join("");
   $("#domainBars").innerHTML=DOMAINS.map(d=>{const x=domainStat(d);return '<div class="bar-row"><div class="bar-label"><span>'+d+'</span><b>'+(x.att?x.pct+"%":"—")+'</b></div><div class="bar-track"><div class="bar-fill" style="width:'+(x.att?x.pct:0)+'%"></div></div></div>'}).join("");
-  const patterns=[
+  const basePatterns=[
     ["Priority errors","Questions tagged FIRST/NEXT/BEST often punish jumping ahead. Ask: what stage am I in?"],
     ["Diagnosis errors","Use timeline, duration, recurrence, impairment, and rule-outs before naming a disorder."],
     ["Treatment errors","Match intervention to mechanism + client + stage of care."],
     ["Ethics errors","Clarify consent, authority, confidentiality limits, competence, and consultation before assuming."]
   ];
-  $("#patternCards").innerHTML=patterns.map(p=>'<div class="pattern"><b>'+p[0]+'</b><div class="muted">'+p[1]+'</div></div>').join("");
+  const reasonCounts={};
+  Object.values(state.errorReasons||{}).forEach(k=>reasonCounts[k]=(reasonCounts[k]||0)+1);
+  const topReasons=Object.entries(reasonCounts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const learned=topReasons.length?topReasons.map(([k,n])=>[ERROR_REASON_LABELS[k]||k,n+" self-identified miss"+(n===1?"":"es")]):basePatterns;
+  $("#patternCards").innerHTML=learned.map(p=>'<div class="pattern"><b>'+p[0]+'</b><div class="muted">'+p[1]+'</div></div>').join("");
   $("#recentActivity").innerHTML=state.activity.length?state.activity.slice(0,12).map(a=>'<div class="recent-row"><span>'+(a.ok?"✅":"❌")+' '+a.topic+'</span><span class="muted">'+new Date(a.t).toLocaleDateString()+'</span></div>').join(""):'<div class="empty">Practice something and your activity will land here.</div>';
 }
 $("#resetProgress").onclick=()=>{if(confirm("Reset all locally saved NCMHCE progress on this device?")){state={answers:{},activity:[],profile:state.profile};save();renderDashboard();toast("Progress reset.");}};
