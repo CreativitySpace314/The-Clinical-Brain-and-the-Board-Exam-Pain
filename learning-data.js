@@ -113,3 +113,93 @@ const FEEDBACK_MICRODRILLS = [
  {lesson:"supports",q:"A client is ready to end therapy but fears relapse. Which option BEST strengthens independence?",choices:["Promise immediate weekly therapy forever","Connect relapse planning with natural/community supports and clear re-entry options","Introduce a brand-new modality","Tell the client not to worry"],answer:1,why:"Maintenance emphasizes external supports, skills, and a plan for future help if needed."},
  {lesson:"wording",q:"All are reasonable short-term interventions EXCEPT:",choices:["Teach one coping skill","Collect baseline data","Address the immediate functional problem","Resolve a lifelong family pattern completely in one month"],answer:3,why:"EXCEPT asks for the least appropriate option; the lifespan-level target is mismatched to the timeframe."}
 ];
+
+const SOURCE_CHECKS = [
+  {
+    status:"verified",
+    icon:"✅",
+    title:"Former client / family-member romance: 5-year prohibition",
+    source:"ACA A.5.c",
+    exam:"Do not date a former client, the former client's romantic partner, or family member until at least 5 years after last professional contact.",
+    nuance:"After 5 years, it is still not automatically okay: the counselor must consider exploitation or harm and document that analysis."
+  },
+  {
+    status:"verified",
+    icon:"✅",
+    title:"Bartering has three core conditions",
+    source:"ACA A.10.e",
+    exam:"Bartering may occur only when the client requests it, it does not cause exploitation or harm, and it is accepted among professionals in the community.",
+    nuance:"The Code also says to consider cultural implications and document the agreement in a clear written contract."
+  },
+  {
+    status:"caution",
+    icon:"⚠️",
+    title:"Economic hardship: 'may adjust' — not 'must provide pro bono'",
+    source:"ACA A.10.c",
+    exam:"The practice-test key may push toward fee adjustment or affordable referral when hardship exists.",
+    nuance:"The actual ACA language says counselors MAY adjust fees when legally permissible OR help the client locate comparable affordable services. It does not require a sliding scale or pro bono care in every hardship case."
+  },
+  {
+    status:"caution",
+    icon:"⚠️",
+    title:"Collections are not limited only to 'unwillingness' to pay",
+    source:"ACA A.10.d",
+    exam:"The exam may contrast hardship-sensitive responses with immediate collections.",
+    nuance:"ACA says that if a counselor intends to use collections/legal measures for unpaid agreed fees, that policy must be in informed consent, the client must be informed in a timely way, and offered an opportunity to pay."
+  },
+  {
+    status:"verified",
+    icon:"✅",
+    title:"Values alone are not a referral reason",
+    source:"ACA A.11.b",
+    exam:"Do not refer or terminate solely because the counselor's personal values conflict with the client's values.",
+    nuance:"Seek training and avoid imposing values."
+  },
+  {
+    status:"verified",
+    icon:"✅",
+    title:"Court order ≠ 'dump the whole file'",
+    source:"ACA B.2.d / B.2.e",
+    exam:"When disclosure is legally compelled, attempt to obtain consent or limit/prohibit the disclosure, and release only essential information.",
+    nuance:"A subpoena and a court order are not identical. The ethical response is procedural and narrow."
+  },
+  {
+    status:"verified",
+    icon:"✅",
+    title:"Couples: define who the client is",
+    source:"ACA B.4.b",
+    exam:"In couples/family work, explicitly define who is considered the client and document expectations and limits of confidentiality.",
+    nuance:"Absent an agreement otherwise, ACA treats the couple/family as the client."
+  },
+  {
+    status:"caution",
+    icon:"⚠️",
+    title:"Supervision problems usually require evaluation + remediation before dismissal",
+    source:"ACA F.6.a–F.6.b",
+    exam:"Protect client welfare when a supervisee is unsafe or persistently ineffective.",
+    nuance:"ACA calls for ongoing evaluation, documented feedback, remedial assistance when needed, and dismissal when the supervisee cannot demonstrate competent services. 'Immediate termination' is not the universal first step."
+  },
+  {
+    status:"verified",
+    icon:"✅",
+    title:"Public presentations: literature + no implied counseling relationship",
+    source:"ACA C.6.c",
+    exam:"Public statements should be grounded in appropriate professional counseling literature and consistent with the Code.",
+    nuance:"Recipients should not be led to believe a professional counseling relationship has been established."
+  }
+];
+
+const MASTER_GUIDE_LESSONS = [
+  {icon:"🧒",title:"Peds: age rules matter",rule:"Before choosing a differential, check whether the diagnosis is even developmentally available.",example:"Antisocial personality disorder is not diagnosed in clients under 18. For a child with severe aggression, consider developmentally plausible alternatives such as conduct disorder, mood disorders, trauma, or neurodevelopmental conditions."},
+  {icon:"🎮",title:"Low engagement: join before you process",rule:"Interest-based rapport often beats confronting resistance during initial engagement.",example:"A child absorbed in a game guide may engage more if you first talk about the interest rather than immediately asking why they will not participate."},
+  {icon:"🫁",title:"Acute dysregulation: concrete first",rule:"When the client is actively dysregulated, choose a usable regulation skill before a long-range relational lesson.",example:"Breathing, grounding, or progressive muscle relaxation can fit the immediate moment better than perspective-taking."},
+  {icon:"📋",title:"Assessment: population fit first",rule:"Age + construct + purpose determine the instrument.",example:"Adult ADHD screening calls for an adult-validated measure; do not choose a pediatric scale because the disorder starts in childhood."},
+  {icon:"🧠",title:"MSE: put the sign in the right bucket",rule:"Mood, affect, thought process, thought content, perception, psychomotor activity, orientation, memory, insight, and judgment are different lanes.",example:"Fidgeting is psychomotor behavior; guilt/anxiety are mood content; paranoia is thought content."},
+  {icon:"🧯",title:"DBT hierarchy",rule:"Life-threatening behaviors → therapy-interfering behaviors → quality-of-life targets.",example:"If active self-harm is present, that outranks improving relationship satisfaction."},
+  {icon:"🧊",title:"DBT distress tolerance",rule:"Know the skill family, not just the buzzword.",example:"TIPP, self-soothing, and pros/cons belong in distress tolerance. Thought stopping is not a core DBT distress-tolerance skill."},
+  {icon:"👥",title:"Group structure can be the intervention",rule:"If someone cannot get space to participate, use structure.",example:"Rounds, dyads, or appropriately cutting off monopolizing can create actual speaking space; active listening alone may not."},
+  {icon:"💞",title:"Gottman: flooding changes the next move",rule:"Stonewalling/flooding → communicate overwhelm + take a structured break + return.",example:"Do not force emotional processing while one partner is physiologically flooded."},
+  {icon:"⬇️",title:"Downward arrow",rule:"Ask what the automatic thought would MEAN if it were true.",example:"'If my partner is not attracted to me, what does that mean about me/us?' traces toward a core schema."},
+  {icon:"🍽️",title:"Eating disorders: think team + medical risk",rule:"Medical stability and interdisciplinary coordination shape level-of-care decisions.",example:"Counselor, medical provider, and nutrition professional often need coordinated roles; new syncope, cardiac instability, or electrolyte disturbance changes urgency."},
+  {icon:"🧬",title:"Genogram = pattern map",rule:"Use a genogram when the question is about intergenerational family/relationship patterns.",example:"A symptom scale measures symptoms; a genogram maps relational structure across generations."}
+];
