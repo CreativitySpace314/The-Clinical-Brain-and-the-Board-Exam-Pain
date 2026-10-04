@@ -181,12 +181,28 @@ function renderDashboard(){
 }
 $("#resetProgress").onclick=()=>{if(confirm("Reset all locally saved NCMHCE progress on this device?")){state={answers:{},activity:[],profile:state.profile};save();renderDashboard();toast("Progress reset.");}};
 
+let caseFilter="all";
+function caseMatches(c,filter){
+  if(filter==="all") return true;
+  const s=(c.title+" "+c.focus).toLowerCase();
+  const maps={
+    anxiety:["anxiety","panic","trauma","worry","health anxiety"],
+    mood:["depression","mood","self-harm","safety","postpartum","grief"],
+    diagnosis:["psychosis","ocd","panic","adhd","differential","eating","health anxiety"],
+    ethics:["ethics","confidentiality","boundaries","minor","partner conflict"],
+    child:["child","school","family","ari"],
+    substance:["substance","cannabis","nia"],
+    group:["group","lucas"]
+  };
+  return (maps[filter]||[]).some(k=>s.includes(k));
+}
 function renderCases(){
-  $("#casePicker").innerHTML=FULL_CASES.map(c=>{
+  const list=FULL_CASES.filter(c=>caseMatches(c,caseFilter));
+  $("#casePicker").innerHTML=list.map(c=>{
     const total=c.parts.reduce((n,p)=>n+p.questions.length,0);
     return '<button class="case-card" data-case="'+c.id+'"><div class="icon">'+c.icon+'</div><h3>'+c.title+'</h3><p>'+c.focus+'</p><div class="case-count">'+total+' questions · 3 sections</div></button>';
   }).join("");
-  $$("[data-case]").forEach(b=>b.onclick=()=>startCase(b.dataset.case));
+  $("[data-case]").forEach(b=>b.onclick=()=>startCase(b.dataset.case));
 }
 
 function startCase(id){
@@ -306,4 +322,10 @@ function finishCase(){
   $("#caseAgain").onclick=()=>startCase(c.id);
   $("#allCases").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden")};
 }
+$("[data-case-filter]").forEach(b=>b.onclick=()=>{
+  caseFilter=b.dataset.caseFilter;
+  $("[data-case-filter]").forEach(x=>x.classList.toggle("selected",x===b));
+  renderCases();
+});
+$("#randomCase").onclick=()=>startCase(FULL_CASES[Math.floor(Math.random()*FULL_CASES.length)].id);
 renderCases();renderHomeStats();setRule();
