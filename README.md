@@ -8,17 +8,16 @@ A bright, ADHD-friendly interactive NCMHCE study app.
 - Ethics Hot Seat
 - Diagnosis Duel
 - Treatment Match
-- Clinical Case Arcade with unfolding case information
+- Clinical Case Arcade with 18 original full cases built as Intake → Session 1 → Session 2, with 9 questions per case
+- 162 full-case questions + 40 rapid-practice questions (202 original items total)
 - Missed-question bank
 - Confidence tracking
 - Domain-level progress dashboard
 - Visual memory rules
 - Local browser progress (no login/database required)
 
-## Exam profiles
-The app includes a profile switch for:
-- Current NCMHCE (before July 1, 2027)
-- Revised NCMHCE (July 1, 2027 and later)
+## Exam focus
+This project is currently optimized for the **current NCMHCE format used before July 1, 2027**. The interface still contains a future-profile reference switch, but the full case bank is written to rehearse the current three-part case-study structure.
 
 The practice items in this repository are **original study questions**, not copied or released NBCC examination questions.
 
