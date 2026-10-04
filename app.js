@@ -205,121 +205,145 @@ function renderCases(){
   $("[data-case]").forEach(b=>b.onclick=()=>startCase(b.dataset.case));
 }
 
+
+let caseMode="study";
 function startCase(id){
-  const c=FULL_CASES.find(x=>x.id===id);
-  caseRun={case:c,part:0,score:0,answers:{},submitted:false};
+  const cc=FULL_CASES.find(x=>x.id===id);
+  caseRun={case:cc,part:0,q:0,score:0,answers:{},revealed:{},referenceOpen:true};
   $("#casePicker").style.display="none";
   $("#caseStage").classList.remove("hidden");
-  renderCasePart();
+  renderCaseQuestion();
 }
 
-function clientSnapshot(c){
-  const m=c.client;
-  return '<div class="client-snapshot">'+
-    '<div class="snapshot-title">CLIENT SNAPSHOT</div>'+
-    '<div class="snapshot-grid">'+
-      '<div><span>Age</span><b>'+m.age+'</b></div>'+
-      '<div><span>Sex</span><b>'+m.sex+'</b></div>'+
-      '<div><span>Gender</span><b>'+m.gender+'</b></div>'+
-      '<div><span>Pronouns</span><b>'+m.pronouns+'</b></div>'+
-      '<div><span>Orientation</span><b>'+m.orientation+'</b></div>'+
-      '<div><span>Race/Ethnicity</span><b>'+m.race+'</b></div>'+
-      '<div><span>Relationship</span><b>'+m.relationship+'</b></div>'+
-      '<div><span>Setting</span><b>'+m.setting+'</b></div>'+
-      '<div><span>Payment</span><b>'+m.payment+'</b></div>'+
-      '<div><span>Counseling</span><b>'+m.type+'</b></div>'+
-      '<div class="wide"><span>Provisional diagnosis</span><b>'+m.provisional+'</b></div>'+
+function clientSnapshotCompact(cc){
+  const m=cc.client;
+  return '<div class="exam-client-grid">'+
+    '<div><b>Age:</b> '+m.age+'</div><div><b>Sex:</b> '+m.sex+'</div>'+
+    '<div><b>Gender:</b> '+m.gender+'</div><div><b>Sexuality:</b> '+m.orientation+'</div>'+
+    '<div><b>Ethnicity:</b> '+m.race+'</div><div><b>Relationship Status:</b> '+m.relationship+'</div>'+
+    '<div><b>Counseling Setting:</b> '+m.setting+'</div><div><b>Type of Counseling:</b> '+m.type+'</div>'+
+    '<div class="wide"><b>Diagnosis:</b> '+m.provisional+'</div></div>';
+}
+
+function currentGlobalNumber(){
+  let n=0;
+  for(let i=0;i<caseRun.part;i++) n+=caseRun.case.parts[i].questions.length;
+  return n+caseRun.q+1;
+}
+function totalCaseQuestions(){
+  return caseRun.case.parts.reduce((n,p)=>n+p.questions.length,0);
+}
+function caseNavigator(){
+  let n=0, html='<div class="case-nav-grid">';
+  caseRun.case.parts.forEach((p,pi)=>p.questions.forEach((q,qi)=>{
+    n++;
+    const key=pi+"-"+qi, answered=caseRun.answers[key]!==undefined;
+    const current=pi===caseRun.part&&qi===caseRun.q;
+    html+='<button class="case-nav-num '+(answered?'answered ':'')+(current?'current':'')+'" data-jump-part="'+pi+'" data-jump-q="'+qi+'">'+n+'</button>';
+  }));
+  return html+'</div>';
+}
+function caseReference(){
+  const cc=caseRun.case,p=cc.parts[caseRun.part];
+  return '<div class="question-reference '+(caseRun.referenceOpen?'open':'closed')+'">'+
+    '<button class="reference-toggle" id="referenceToggle"><span>Question Reference</span><span>'+(caseRun.referenceOpen?'⌃':'⌄')+'</span></button>'+
+    '<div class="reference-body">'+
+      (caseRun.part===0?clientSnapshotCompact(cc):'')+
+      '<div class="exam-part-label">'+p.label+'</div>'+
+      '<div class="exam-session-label">'+p.section+'</div>'+
+      '<div class="exam-narrative">'+p.narrative+'</div>'+
     '</div></div>';
 }
-
-function partTabs(c){
-  return '<div class="case-part-tabs">'+c.parts.map((p,i)=>
-    '<div class="case-part-tab '+(i===caseRun.part?'active':i<caseRun.part?'done':'')+'">'+
-      '<span>'+(i+1)+'</span><div><b>'+p.label+'</b><small>'+p.section+'</small></div>'+
-    '</div>').join("")+'</div>';
-}
-
-function renderCasePart(){
-  const c=caseRun.case,p=c.parts[caseRun.part];
-  caseRun.answers={};caseRun.submitted=false;
+function renderCaseQuestion(){
+  const cc=caseRun.case,p=cc.parts[caseRun.part],q=p.questions[caseRun.q];
+  const key=caseRun.part+"-"+caseRun.q;
+  const chosen=caseRun.answers[key];
+  const global=currentGlobalNumber(),total=totalCaseQuestions();
   $("#caseStage").innerHTML=
-    '<div class="case-head"><div><span class="tag priority">FULL CASE SIMULATION</span><h2>'+c.icon+' '+c.title+'</h2><p class="muted">'+c.focus+'</p></div><button class="ghost" id="leaveCase">← Cases</button></div>'+
-    partTabs(c)+clientSnapshot(c)+
-    '<div class="case-narrative"><div class="narrative-label">'+p.label+' · '+p.section+'</div><p>'+p.narrative+'</p></div>'+
-    '<div class="case-questions-head"><div><span class="eyebrow">QUESTIONS FOR THIS SECTION</span><h3>Answer all '+p.questions.length+' before submitting.</h3></div><div class="case-running-score">Case score: '+caseRun.score+'</div></div>'+
-    '<div id="partQuestions" class="part-questions">'+
-      p.questions.map((q,qi)=>renderPartQuestion(q,qi)).join("")+
-    '</div>'+
-    '<div class="case-submit-row"><button class="cta pink-bg" id="submitPart">Submit '+p.label+'</button></div>'+
-    '<div id="partSummary"></div>';
+    '<div class="case-sim-top"><div><span class="tag priority">'+(caseMode==="study"?'STUDY MODE':'EXAM-LIKE MODE')+'</span><h2>'+cc.icon+' '+cc.title+'</h2></div><button class="ghost" id="leaveCase">← Cases</button></div>'+
+    '<div class="exam-shell">'+
+      '<aside class="exam-sidebar">'+
+        '<div class="exam-progress-label">'+global+' / '+total+'</div>'+
+        '<div class="progress"><div style="width:'+Math.round((global-1)/total*100)+'%"></div></div>'+
+        '<div class="nav-legend"><span>■ Answered</span><span>□ Unanswered</span></div>'+
+        caseNavigator()+
+      '</aside>'+
+      '<section class="exam-main">'+
+        caseReference()+
+        '<article class="single-case-question">'+
+          '<div class="case-question-number">'+global+'.</div>'+
+          '<div class="case-question-body">'+
+            '<div class="case-domain-line"><span class="tag">'+q.domain+'</span><span class="subdomain">'+q.sub+'</span></div>'+
+            '<h3>'+q.q+'</h3>'+
+            (caseMode==="study"?'<button class="hint-toggle" id="hintToggle">💡 Show hint</button><div class="case-hint" id="caseHint">Think: '+q.rule+'</div>':'')+
+            '<div class="single-options">'+q.choices.map((x,i)=>'<button class="case-radio '+(chosen===i?'selected':'')+'" data-choice="'+i+'"><span class="radio-dot"></span><span>'+x+'</span></button>').join("")+'</div>'+
+            '<div id="singleFeedback"></div>'+
+          '</div>'+
+        '</article>'+
+        '<div class="exam-nav-buttons"><button class="exam-prev" id="casePrev" '+(global===1?'disabled':'')+'>Previous</button><button class="exam-next" id="caseNext">'+(global===total?'Finish':'Next')+'</button></div>'+
+      '</section>'+
+    '</div>';
 
   $("#leaveCase").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden");};
-  $$(".case-option").forEach(b=>b.onclick=()=>selectCaseAnswer(+b.dataset.q,+b.dataset.a,b));
-  $("#submitPart").onclick=submitCasePart;
-}
+  $("#referenceToggle").onclick=()=>{caseRun.referenceOpen=!caseRun.referenceOpen;renderCaseQuestion();};
+  if($("#hintToggle")) $("#hintToggle").onclick=()=>$("#caseHint").classList.toggle("show");
+  $$(".case-radio").forEach(b=>b.onclick=()=>selectSingleCaseAnswer(+b.dataset.choice));
+  $$(".case-nav-num").forEach(b=>b.onclick=()=>{caseRun.part=+b.dataset.jumpPart;caseRun.q=+b.dataset.jumpQ;renderCaseQuestion();});
+  $("#casePrev").onclick=()=>moveCase(-1);
+  $("#caseNext").onclick=()=>moveCase(1);
 
-function renderPartQuestion(q,qi){
-  return '<article class="lined-question" id="cq'+qi+'">'+
-    '<div class="lined-q-top"><span class="q-number">'+(qi+1)+'</span><div><span class="tag">'+q.domain+'</span><div class="subdomain">'+q.sub+'</div></div></div>'+
-    '<h4>'+q.q+'</h4>'+
-    '<div class="lined-options">'+q.choices.map((x,i)=>
-      '<button class="case-option" data-q="'+qi+'" data-a="'+i+'"><span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+x+'</span></button>'
-    ).join("")+'</div>'+
-    '<div class="case-q-feedback" id="cf'+qi+'"></div>'+
-  '</article>';
+  if(caseMode==="study" && caseRun.revealed[key]) showStudyFeedback();
 }
-
-function selectCaseAnswer(qi,ai,btn){
-  if(caseRun.submitted)return;
-  caseRun.answers[qi]=ai;
-  $$('#cq'+qi+' .case-option').forEach(x=>x.classList.remove("selected"));
-  btn.classList.add("selected");
+function selectSingleCaseAnswer(ai){
+  const key=caseRun.part+"-"+caseRun.q;
+  caseRun.answers[key]=ai;
+  $$(".case-radio").forEach((b,i)=>b.classList.toggle("selected",i===ai));
+  if(caseMode==="study"){
+    caseRun.revealed[key]=true;
+    showStudyFeedback();
+  }
 }
-
-function submitCasePart(){
-  if(caseRun.submitted)return;
-  const p=caseRun.case.parts[caseRun.part];
-  if(Object.keys(caseRun.answers).length<p.questions.length){
-    toast("Answer every question in this section first.");
+function showStudyFeedback(){
+  const p=caseRun.case.parts[caseRun.part],q=p.questions[caseRun.q],key=caseRun.part+"-"+caseRun.q;
+  if(caseRun.answers[key]===undefined)return;
+  const chosen=caseRun.answers[key],ok=chosen===q.answer;
+  $$(".case-radio").forEach((b,i)=>{
+    b.disabled=true;
+    b.classList.remove("correct","wrong","dim");
+    if(i===q.answer)b.classList.add("correct");
+    else if(i===chosen)b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  $("#singleFeedback").innerHTML='<div class="case-feedback '+(ok?'good':'bad')+'"><b>'+(ok?'✓ Correct':'✗ Review this')+'</b><div>'+q.why+'</div><div class="mini-rule">🧠 '+q.rule+'</div></div>';
+}
+function moveCase(dir){
+  const total=totalCaseQuestions(),global=currentGlobalNumber();
+  if(dir>0 && global===total){
+    if(Object.keys(caseRun.answers).length<total){toast("You still have unanswered questions.");return;}
+    finishCase();
     return;
   }
-  caseRun.submitted=true;
-  let partScore=0;
-  p.questions.forEach((q,qi)=>{
-    const chosen=caseRun.answers[qi],ok=chosen===q.answer;
-    if(ok){partScore++;caseRun.score++;}
-    $$('#cq'+qi+' .case-option').forEach((b,i)=>{
-      b.disabled=true;
-      b.classList.remove("selected");
-      if(i===q.answer)b.classList.add("correct");
-      else if(i===chosen)b.classList.add("wrong");
-      else b.classList.add("dim");
-    });
-    $("#cf"+qi).innerHTML='<div class="case-feedback '+(ok?'good':'bad')+'"><b>'+(ok?'✓ Correct':'✗ Review')+'</b><div>'+q.why+'</div><div class="mini-rule">🧠 '+q.rule+'</div></div>';
-  });
-  $("#submitPart").style.display="none";
-  const isLast=caseRun.part===caseRun.case.parts.length-1;
-  $("#partSummary").innerHTML='<div class="part-summary"><div><span class="eyebrow">SECTION RESULT</span><h3>'+partScore+'/'+p.questions.length+' correct</h3><p>'+(isLast?'You finished the full case.':'New information comes next. Do not carry assumptions forward unless the new narrative supports them.')+'</p></div><button class="cta green-bg" id="advancePart">'+(isLast?'Finish case →':'Unlock next section →')+'</button></div>';
-  $("#advancePart").onclick=()=>{
-    if(isLast) finishCase();
-    else {caseRun.part++;renderCasePart();window.scrollTo({top:0,behavior:"smooth"});}
-  };
+  if(dir>0){
+    if(caseRun.q<caseRun.case.parts[caseRun.part].questions.length-1)caseRun.q++;
+    else {caseRun.part++;caseRun.q=0;}
+  } else {
+    if(caseRun.q>0)caseRun.q--;
+    else {caseRun.part--;caseRun.q=caseRun.case.parts[caseRun.part].questions.length-1;}
+  }
+  renderCaseQuestion();
 }
-
 function finishCase(){
-  const c=caseRun.case,total=c.parts.reduce((n,p)=>n+p.questions.length,0);
-  const pct=Math.round(caseRun.score/total*100);
-  $("#caseStage").innerHTML=
-    '<div class="case-complete">'+
-      '<div class="case-complete-brain">🧠⚡</div>'+
-      '<span class="tag priority">CASE COMPLETE</span>'+
-      '<h2>'+c.title+'</h2>'+
-      '<div class="case-score-big">'+caseRun.score+' / '+total+'</div>'+
-      '<p>'+pct+'% on this original case simulation. More important: did your reasoning change when the narrative changed?</p>'+
-      '<div class="memory-strip"><div class="memory-title">NCMHCE CASE RULE</div><div class="memory-rule">Read only what you know NOW. Intake → questions → new session data → new questions.</div></div>'+
-      '<div class="hero-actions"><button class="cta pink-bg" id="caseAgain">↻ Replay case</button><button class="cta green-bg" id="allCases">Choose another</button></div>'+
-    '</div>';
-  $("#caseAgain").onclick=()=>startCase(c.id);
+  const cc=caseRun.case,total=totalCaseQuestions();
+  let score=0,review=[];
+  cc.parts.forEach((p,pi)=>p.questions.forEach((q,qi)=>{
+    const key=pi+"-"+qi,chosen=caseRun.answers[key],ok=chosen===q.answer;
+    if(ok)score++; else review.push({n:(()=>{let n=0;for(let i=0;i<pi;i++)n+=cc.parts[i].questions.length;return n+qi+1})(),q,chosen});
+  }));
+  const pct=Math.round(score/total*100);
+  $("#caseStage").innerHTML='<div class="case-complete"><div class="case-complete-brain">🧠⚡</div><span class="tag priority">CASE COMPLETE</span><h2>'+cc.title+'</h2><div class="case-score-big">'+score+' / '+total+'</div><p>'+pct+'% on this original simulation.</p>'+
+    (caseMode==="exam"&&review.length?'<div class="exam-review-list">'+review.map(x=>'<div class="exam-review-item"><b>Question '+x.n+'</b><div>'+x.q.q+'</div><div class="mini-rule">Correct: '+x.q.choices[x.q.answer]+' · '+x.q.rule+'</div></div>').join("")+'</div>':'')+
+    '<div class="memory-strip"><div class="memory-title">CASE RULE</div><div class="memory-rule">Keep the reference open when you need it. The question changes; the case is the anchor.</div></div><div class="hero-actions"><button class="cta pink-bg" id="caseAgain">↻ Replay</button><button class="cta green-bg" id="allCases">Choose another</button></div></div>';
+  $("#caseAgain").onclick=()=>startCase(cc.id);
   $("#allCases").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden")};
 }
 $("[data-case-filter]").forEach(b=>b.onclick=()=>{
@@ -327,5 +351,7 @@ $("[data-case-filter]").forEach(b=>b.onclick=()=>{
   $("[data-case-filter]").forEach(x=>x.classList.toggle("selected",x===b));
   renderCases();
 });
+$("#caseStudyMode").onclick=()=>{caseMode="study";$("#caseStudyMode").classList.add("selected");$("#caseExamMode").classList.remove("selected");toast("Study mode: hints + instant feedback");};
+$("#caseExamMode").onclick=()=>{caseMode="exam";$("#caseExamMode").classList.add("selected");$("#caseStudyMode").classList.remove("selected");toast("Exam-like mode: feedback waits until the end");};
 $("#randomCase").onclick=()=>startCase(FULL_CASES[Math.floor(Math.random()*FULL_CASES.length)].id);
 renderCases();renderHomeStats();setRule();
