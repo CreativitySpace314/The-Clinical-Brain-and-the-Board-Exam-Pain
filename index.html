@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ff2ca8">
+<title>Clinical Brain Lab · NCMHCE Prep</title>
+<meta name="description" content="Bright, interactive NCMHCE study lab with case practice, rapid recall, missed-question tracking, and progress analytics.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="noise" aria-hidden="true"></div>
+<header class="topbar">
+  <a class="brand" href="#home" data-route="home"><span class="brain">🧠</span><span>CLINICAL <b>BRAIN</b> LAB</span></a>
+  <nav class="nav">
+    <button data-route="home" class="active">Home</button>
+    <button data-route="practice">Practice</button>
+    <button data-route="cases">Cases</button>
+    <button data-route="review">Missed</button>
+    <button data-route="dashboard">Progress</button>
+  </nav>
+</header>
+
+<main>
+<section id="home" class="page active">
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">NCMHCE PREP • BUILT FOR A BUSY BRAIN</div>
+      <h1>Make your brain <span class="pink">DO</span> the exam.</h1>
+      <p>Not a wall of notes. Short rounds, bright feedback, case-based decisions, visual rules, and a missed-question loop that keeps bringing weak spots back.</p>
+      <div class="hero-actions">
+        <button class="cta pink-bg" id="startSmart">⚡ Smart 10</button>
+        <button class="cta green-bg" data-route="cases">🧩 Case Challenge</button>
+        <button class="cta blue-bg" data-route="practice">🎮 Pick a Mode</button>
+      </div>
+      <div class="exam-note">Current NCMHCE: 11 case studies / 100 scored questions. NBCC has announced a revised exam effective July 1, 2027. Use the profile switch below for your planned test date.</div>
+    </div>
+    <div class="brain-orbit" aria-hidden="true">
+      <div class="orb orb1">DSM</div><div class="orb orb2">ETHICS</div><div class="orb orb3">FIRST?</div><div class="orb orb4">TX</div>
+      <div class="core">🧠</div>
+    </div>
+  </div>
+
+  <div class="profile-card">
+    <div><strong>Exam profile</strong><div class="muted">This changes labels and study emphasis; original practice questions remain practice—not released NBCC items.</div></div>
+    <div class="segmented">
+      <button id="profileCurrent" class="selected">Before Jul 1, 2027</button>
+      <button id="profile2027">Jul 1, 2027+</button>
+    </div>
+  </div>
+
+  <div class="stat-grid" id="homeStats"></div>
+
+  <h2 class="section-heading">Pick your dopamine ✨</h2>
+  <div class="mode-grid">
+    <button class="mode-card hot" data-mode="smart"><span>⚡</span><h3>Smart 10</h3><p>10 questions weighted toward weak areas.</p><b>START →</b></button>
+    <button class="mode-card lime" data-mode="lightning"><span>💥</span><h3>Lightning Round</h3><p>Fast recall. No overthinking allowed.</p><b>START →</b></button>
+    <button class="mode-card cyan" data-route="cases"><span>🧩</span><h3>Case Challenge</h3><p>Follow one client as the story unfolds.</p><b>ENTER →</b></button>
+    <button class="mode-card violet" data-mode="ethics"><span>⚖️</span><h3>Ethics Hot Seat</h3><p>BEST, FIRST, MOST appropriate.</p><b>START →</b></button>
+    <button class="mode-card orange" data-mode="diagnosis"><span>🔎</span><h3>Diagnosis Duel</h3><p>Episode vs disorder. Rule-outs. Duration.</p><b>START →</b></button>
+    <button class="mode-card blue" data-mode="treatment"><span>🛠️</span><h3>Treatment Match</h3><p>Goal, intervention, modality, next step.</p><b>START →</b></button>
+  </div>
+
+  <div class="memory-strip">
+    <div class="memory-title">🧠 TODAY'S VISUAL RULE</div>
+    <div id="ruleOfDay" class="memory-rule"></div>
+  </div>
+</section>
+
+<section id="practice" class="page">
+  <div class="page-head"><div><div class="eyebrow">INTERACTIVE PRACTICE</div><h1>Choose your chaos.</h1></div><button class="ghost" id="practiceBack">← Home</button></div>
+  <div class="practice-controls">
+    <label>Domain<select id="domainFilter"><option value="all">All domains</option></select></label>
+    <label>Length<select id="lengthFilter"><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option></select></label>
+    <button class="cta pink-bg" id="customStart">Start set</button>
+  </div>
+  <div class="mode-grid compact">
+    <button class="mode-card hot" data-mode="smart"><span>⚡</span><h3>Smart 10</h3><p>Weak-area weighted.</p></button>
+    <button class="mode-card lime" data-mode="lightning"><span>💥</span><h3>Lightning</h3><p>Speed + recall.</p></button>
+    <button class="mode-card violet" data-mode="ethics"><span>⚖️</span><h3>Ethics</h3><p>Professional judgment.</p></button>
+    <button class="mode-card orange" data-mode="diagnosis"><span>🔎</span><h3>Diagnosis</h3><p>Criteria + differential.</p></button>
+    <button class="mode-card blue" data-mode="treatment"><span>🛠️</span><h3>Treatment</h3><p>Planning + intervention.</p></button>
+  </div>
+</section>
+
+<section id="quiz" class="page">
+  <div class="quiz-top">
+    <button class="ghost" data-route="practice">✕ Exit</button>
+    <div class="quiz-progress-wrap"><div class="quiz-meta" id="quizMeta"></div><div class="progress"><div id="quizProgress"></div></div></div>
+    <div class="streak" id="streakBox">🔥 0</div>
+  </div>
+  <article class="question-card">
+    <div class="question-tags" id="questionTags"></div>
+    <h2 id="questionText"></h2>
+    <div id="questionStem" class="stem"></div>
+    <div id="answerChoices" class="answers"></div>
+    <div id="feedback" class="feedback"></div>
+    <div class="confidence" id="confidenceBox">
+      <span>How sure were you?</span>
+      <button data-confidence="guess">😵 Guess</button><button data-confidence="maybe">🤔 Maybe</button><button data-confidence="know">😎 Knew it</button>
+    </div>
+    <div class="question-actions"><button id="nextQuestion" class="cta green-bg">Next →</button></div>
+  </article>
+</section>
+
+<section id="cases" class="page">
+  <div class="page-head"><div><div class="eyebrow">CASE-BASED REASONING</div><h1>Clinical Case Arcade</h1><p>Information unfolds. Your answer should change only when the evidence changes.</p></div><button class="ghost" data-route="home">← Home</button></div>
+  <div id="casePicker" class="case-picker"></div>
+  <div id="caseStage" class="case-stage hidden"></div>
+</section>
+
+<section id="review" class="page">
+  <div class="page-head"><div><div class="eyebrow">YOUR ERROR BANK</div><h1>Missed ≠ failed. Missed = data.</h1></div><button class="cta pink-bg" id="reviewDrill">Drill missed</button></div>
+  <div class="review-toolbar">
+    <button class="chip selected" data-review="all">All</button><button class="chip" data-review="repeat">Repeated misses</button><button class="chip" data-review="low">Low confidence</button>
+  </div>
+  <div id="missedList" class="review-list"></div>
+</section>
+
+<section id="dashboard" class="page">
+  <div class="page-head"><div><div class="eyebrow">PROGRESS WITHOUT SHAME</div><h1>Your Clinical Brain Scan</h1></div><button class="ghost" data-route="home">← Home</button></div>
+  <div id="dashStats" class="stat-grid"></div>
+  <div class="dashboard-grid">
+    <div class="panel"><h3>Domain mastery</h3><div id="domainBars"></div></div>
+    <div class="panel"><h3>What your misses are doing</h3><div id="patternCards"></div></div>
+    <div class="panel full"><h3>Recent activity</h3><div id="recentActivity"></div></div>
+  </div>
+  <button class="danger" id="resetProgress">Reset local progress</button>
+</section>
+</main>
+
+<div id="toast" class="toast"></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
