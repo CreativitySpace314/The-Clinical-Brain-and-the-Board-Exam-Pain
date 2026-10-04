@@ -388,7 +388,13 @@ function renderLearn(){
   $("#lessonGrid").innerHTML=FEEDBACK_LESSONS.map(l=>
     '<button class="lesson-card '+l.color+'" data-lesson="'+l.id+'"><span class="lesson-icon">'+l.icon+'</span><h3>'+l.title+'</h3><p>'+l.rule+'</p><b>LEARN THE RULE →</b></button>'
   ).join("");
-  $$(".lesson-card").forEach(b=>b.onclick=()=>openLesson(b.dataset.lesson));
+  $(".lesson-card").forEach(b=>b.onclick=()=>openLesson(b.dataset.lesson));
+  if($("#sourceCheckGrid")) $("#sourceCheckGrid").innerHTML=SOURCE_CHECKS.map(x=>
+    '<article class="source-check-card '+x.status+'"><div class="source-check-top"><span class="source-icon">'+x.icon+'</span><div><span class="source-status">'+(x.status==="verified"?"ACA VERIFIED":"TEST-PREP CAUTION")+'</span><h3>'+x.title+'</h3><small>'+x.source+'</small></div></div><p><b>Exam move:</b> '+x.exam+'</p><div class="source-nuance"><b>Actual-code nuance:</b> '+x.nuance+'</div></article>'
+  ).join("");
+  if($("#masterGuideGrid")) $("#masterGuideGrid").innerHTML=MASTER_GUIDE_LESSONS.map(x=>
+    '<article class="master-card"><span>'+x.icon+'</span><h3>'+x.title+'</h3><div class="master-rule">'+x.rule+'</div><p>'+x.example+'</p></article>'
+  ).join("");
 }
 function openLesson(id){
   const l=FEEDBACK_LESSONS.find(x=>x.id===id);
