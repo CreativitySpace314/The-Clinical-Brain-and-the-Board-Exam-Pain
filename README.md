@@ -8,8 +8,8 @@ A bright, ADHD-friendly interactive NCMHCE study app.
 - Ethics Hot Seat
 - Diagnosis Duel
 - Treatment Match
-- Clinical Case Arcade with 22 original full cases built as Intake → Session 1 → Session 2, with 9 questions per case
-- 215 full-case questions + 40 rapid-practice questions (255 original items total)
+- Clinical Case Arcade with 23 original full cases built as Intake → Session 1 → Session 2, with 9 questions per case
+- 228 full-case questions + 40 rapid-practice questions (268 original items total)
 - Missed-question bank
 - Confidence tracking
 - Domain-level progress dashboard
