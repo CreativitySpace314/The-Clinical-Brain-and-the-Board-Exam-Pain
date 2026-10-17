@@ -117,3 +117,9 @@ main{width:min(1180px,calc(100% - 28px));margin:auto}.page{display:none;padding:
 .case-domain-icons{display:flex;gap:7px;margin:10px 0 2px}.case-domain-icons span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#191923;border:1px solid var(--line);font-size:1rem}
 .case-card{cursor:pointer}.case-card:hover .open-pill{background:rgba(34,217,255,.15);box-shadow:0 0 16px rgba(34,217,255,.12)}
 .case-memory-cue{display:flex;gap:11px;align-items:flex-start;margin-top:12px;padding:12px;border:1px solid rgba(183,255,36,.3);background:rgba(183,255,36,.06);border-radius:14px}.case-memory-cue>span{font-size:1.5rem}.case-memory-cue b{display:block;color:var(--green);font-size:.72rem;letter-spacing:.1em}.case-memory-cue p{margin:4px 0 0;color:#f0f6e6;line-height:1.45}
+
+
+/* Case results domain breakdown */
+.case-results-breakdown{margin:24px auto 18px;max-width:780px;text-align:left;border:1px solid var(--line);background:#101019;border-radius:18px;padding:16px}
+.case-domain-result{margin-top:12px}.case-domain-result-top{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:6px;font-size:.92rem}.case-domain-result-top b{color:var(--green)}
+.case-complete .exam-review-list{max-width:780px;margin:18px auto;text-align:left}
