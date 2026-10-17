@@ -357,16 +357,25 @@ function moveCase(dir){
 function finishCase(){
   const cc=caseRun.case,total=totalCaseQuestions();
   let score=0,review=[];
+  const byDomain={};
   cc.parts.forEach((p,pi)=>p.questions.forEach((q,qi)=>{
     const key=pi+"-"+qi,chosen=caseRun.answers[key],ok=chosen===q.answer;
-    if(ok)score++; else review.push({n:(()=>{let n=0;for(let i=0;i<pi;i++)n+=cc.parts[i].questions.length;return n+qi+1})(),q,chosen});
+    byDomain[q.domain]=byDomain[q.domain]||{correct:0,total:0};
+    byDomain[q.domain].total++;
+    if(ok){score++;byDomain[q.domain].correct++;} 
+    else review.push({n:(()=>{let n=0;for(let i=0;i<pi;i++)n+=cc.parts[i].questions.length;return n+qi+1})(),q,chosen});
   }));
   const pct=Math.round(score/total*100);
+  const breakdown=Object.entries(byDomain).map(([d,x])=>{
+    const dp=Math.round(x.correct/x.total*100);
+    return '<div class="case-domain-result"><div class="case-domain-result-top"><span>'+caseDomainEmoji(d)+' '+d+'</span><b>'+x.correct+'/'+x.total+'</b></div><div class="bar-track"><div class="bar-fill" style="width:'+dp+'%"></div></div></div>';
+  }).join("");
   $("#caseStage").innerHTML='<div class="case-complete"><div class="case-complete-brain">🧠⚡</div><span class="tag priority">CASE COMPLETE</span><h2>'+cc.title+'</h2><div class="case-score-big">'+score+' / '+total+'</div><p>'+pct+'% on this original simulation.</p>'+
-    (caseMode==="exam"&&review.length?'<div class="exam-review-list">'+review.map(x=>'<div class="exam-review-item"><b>Question '+x.n+'</b><div>'+x.q.q+'</div><div class="mini-rule">Correct: '+x.q.choices[x.q.answer]+' · '+x.q.rule+'</div></div>').join("")+'</div>':'')+
-    '<div class="memory-strip"><div class="memory-title">CASE RULE</div><div class="memory-rule">Keep the reference open when you need it. The question changes; the case is the anchor.</div></div><div class="hero-actions"><button class="cta pink-bg" id="caseAgain">↻ Replay</button><button class="cta green-bg" id="allCases">Choose another</button></div></div>';
+    '<div class="case-results-breakdown"><span class="eyebrow">DOMAIN BREAKDOWN</span>'+breakdown+'</div>'+
+    (review.length?'<div class="exam-review-list"><span class="eyebrow">MISSED QUESTIONS</span>'+review.map(x=>'<div class="exam-review-item"><b>Question '+x.n+' · '+x.q.domain+'</b><div>'+x.q.q+'</div><div class="mini-rule">Correct: '+x.q.choices[x.q.answer]+' · '+x.q.rule+'</div></div>').join("")+'</div>':'')+
+    '<div class="memory-strip"><div class="memory-title">CASE RULE</div><div class="memory-rule">The case is the anchor. Track what changed between sessions and let the CURRENT clinical need drive the answer.</div></div><div class="hero-actions"><button class="cta pink-bg" id="caseAgain">↻ Replay</button><button class="cta green-bg" id="allCases">Choose another</button></div></div>';
   $("#caseAgain").onclick=()=>startCase(cc.id);
-  $("#allCases").onclick=()=>{$("#casePicker").style.display="grid";$("#caseStage").classList.add("hidden")};
+  $("#allCases").onclick=()=>{$("#caseStage").classList.add("hidden");renderCases();};
 }
 $("[data-case-filter]").forEach(b=>b.onclick=()=>{
   caseFilter=b.dataset.caseFilter;
